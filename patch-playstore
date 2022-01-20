@@ -35,7 +35,7 @@ setup () {
 unpack_gplay () {
 	echo "[1] Unpacking APK"
 	rm -rf "${gplay_work}" "${gplay_orig}"
-	apktool -q d ${APKTOOL_FLAGS} "${gplay}" -o "${gplay_work}" || error "apktool failed to unpack ${gplay}"
+	apktool -q d --no-src ${APKTOOL_FLAGS} "${gplay}" -o "${gplay_work}" || error "apktool failed to unpack ${gplay}"
 
 	grep -q FAKE_PACKAGE_SIGNATURE "${gplay_work}/AndroidManifest.xml" && error "APK already patched!"
 
