@@ -5,6 +5,7 @@ strings_insert="    <string name=\"fake_signature\">308204433082032ba00302010202
 
 error () {
 	echo -e "\nERROR: ${@}\n"
+	[ "$DEBUG" ] || rm -rf "${gplay_work}" "${gplay_orig}"
 	exit 1
 }
 
@@ -51,7 +52,7 @@ repack_gplay () {
 	mv "${gplay_dist}" "${gplay_out}"
 	command -v apksigner >/dev/null && [ -f "${keystore}" ] && apksigner sign --ks "${keystore}" "${gplay_out}"
 
-	rm -rf "${gplay_work}" "${gplay_orig}"
+	[ "$DEBUG" ] || rm -rf "${gplay_work}" "${gplay_orig}"
 }
 
 patch_gplay () {
@@ -94,6 +95,7 @@ for file in "${@}"; do
 	setup
 	unpack_gplay
 	patch_gplay || error "patching failed"
+	[ "$DEBUG" ] && { echo "[D] Press enter to resume"; read REPLY; }
 	repack_gplay
 done
 
