@@ -10,7 +10,6 @@ error () {
 
 setup () {
 	command -v apktool >/dev/null || error "apktool not found"
-	command -v apksigner >/dev/null || error "apksigner not found"
 	command -v aapt >/dev/null || error "aapt not found"
 
 	gplay_version=$(aapt dump badging "${gplay}" | gawk -F \' '/^package: name/{print $4}')
@@ -50,7 +49,7 @@ repack_gplay () {
 	apktool -q b ${APKTOOL_FLAGS} "${gplay_work}" || error "apktool failed to repack ${gplay}"
 
 	mv "${gplay_dist}" "${gplay_out}"
-	[ -f "${keystore}" ] && apksigner sign --ks "${keystore}" "${gplay_out}"
+	command -v apksigner >/dev/null && [ -f "${keystore}" ] && apksigner sign --ks "${keystore}" "${gplay_out}"
 
 	rm -rf "${gplay_work}" "${gplay_orig}"
 }
