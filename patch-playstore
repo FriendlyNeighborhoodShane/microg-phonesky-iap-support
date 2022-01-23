@@ -24,9 +24,8 @@ unpack_gplay () {
 	gplay_version_p=$(grep 'versionName: ' "play_unpack/apktool.yml" | cut -d' ' -f4)
 	gplay_name=$(grep '<manifest' "play_unpack/AndroidManifest.xml" | grep -o 'package=[^ ]*' | cut -d= -f2 | tr -d '"')
 
-	[[ "${gplay_name}" != com.android.vending ]] && error "Given file is not a Play Store apk"
+	[ "${gplay_name}" != com.android.vending ] && error "Given file is not a Play Store apk"
 	[ -z "${gplay_version}" ] && error "Could not determine Play Store version code"
-	[[ ! "${gplay_version_p}" != ^[0-9][0-9].[0-9].[0-9][0-9]$ ]] && error "Version seems not like a Play Store version"
 
 	echo "Detected Play Store:
 
@@ -61,17 +60,17 @@ repack_gplay () {
 patch_gplay () {
 	echo "[2] Patching APK"
 	# add FAKE_PACKAGE_SIGNATURE
-	manifest_perm_pos=$(gawk '/uses-permission/{print FNR ; exit}' "${gplay_work}/AndroidManifest.xml")
+	manifest_perm_pos=$(awk '/uses-permission/{print FNR ; exit}' "${gplay_work}/AndroidManifest.xml")
 	manifest_perm_insert="<uses-permission android:name=\"android.permission.FAKE_PACKAGE_SIGNATURE\"/>"
 	sed "${manifest_perm_pos}i${manifest_perm_insert}" -i "${gplay_work}/AndroidManifest.xml"
 
 	# add metadata to activity
-	manifest_activity_pos=$(gawk '/activity/{print FNR ; exit}' "${gplay_work}/AndroidManifest.xml")
+	manifest_activity_pos=$(awk '/activity/{print FNR ; exit}' "${gplay_work}/AndroidManifest.xml")
 	manifest_activity_insert="<meta-data android:name=\"fake-signature\" android:value=\"@string/fake_signature\"/>"
 	sed "${manifest_activity_pos}a${manifest_activity_insert}" -i "${gplay_work}/AndroidManifest.xml"
 
 	# deactivate bootreceiver
-	manifest_bootreceiver_pos=$(gawk '/com.google.android.finsky.boothandler.BootCompletedReceiver/{print FNR ; exit}' "${gplay_work}/AndroidManifest.xml")
+	manifest_bootreceiver_pos=$(awk '/com.google.android.finsky.boothandler.BootCompletedReceiver/{print FNR ; exit}' "${gplay_work}/AndroidManifest.xml")
 	manifest_bootreceiver_start=$((manifest_bootreceiver_pos + 1))
 	manifest_bootreceiver_end=$((manifest_bootreceiver_start + 2))
 
@@ -82,9 +81,9 @@ patch_gplay () {
 	sed "/<\/resources>/i ${strings_insert}" -i "${gplay_work}/res/values/strings.xml"
 
 	# add public string id fake_signature
-	public_pos=$(gawk '/type="string"/{a=FNR} END{print a}' "${gplay_work}/res/values/public.xml")
+	public_pos=$(awk '/type="string"/{a=FNR} END{print a}' "${gplay_work}/res/values/public.xml")
 	public_pos_insert=$((public_pos + 1))
-	public_id=$(gawk -F\" -v line=${public_pos} 'NR==line {print $6}' "${gplay_work}/res/values/public.xml")
+	public_id=$(awk -F\" -v line=${public_pos} 'NR==line {print $6}' "${gplay_work}/res/values/public.xml")
 	public_id_insert=$(printf "%X\n" $((public_id + 1)))
 	public_insert="    <public type=\"string\" name=\"fake_signature\" id=\"0x${public_id_insert}\" />"
 
